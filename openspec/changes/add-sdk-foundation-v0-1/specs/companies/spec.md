@@ -27,7 +27,9 @@ desembrulhada de `company`.
 `companies.create(params)` SHALL enviar `POST /v2/companies` com o corpo embrulhado em `{"company": …}`;
 `companies.update(company_id, params)` SHALL enviar `PUT /v2/companies/{company_id}` com o mesmo envelope
 e substituição completa; `companies.delete(company_id)` SHALL enviar `DELETE /v2/companies/{company_id}`
-e aceitar 204. As respostas com corpo SHALL ser desembrulhadas de `company`.
+e aceitar 204. As respostas com corpo SHALL ser desembrulhadas de `company`. A documentação de
+`delete` SHALL avisar que a API faz desativação (soft delete): a empresa continua consultável com
+`status` `Inactive` (provado em 2026-10-08).
 
 #### Scenario: Criação
 - **WHEN** o usuário chama `create({"name": "…", "federalTaxNumber": …, "taxRegime": "SimplesNacional", "address": {…}})`
@@ -36,6 +38,10 @@ e aceitar 204. As respostas com corpo SHALL ser desembrulhadas de `company`.
 #### Scenario: Exclusão
 - **WHEN** a API responde 204
 - **THEN** o método retorna `None` sem erro
+
+#### Scenario: Empresa excluída continua consultável
+- **WHEN** o usuário consulta uma empresa depois de `delete`
+- **THEN** o SDK devolve a empresa com `status == "Inactive"`, como a API responde
 
 ### Requirement: Modelo Company
 `Company` SHALL expor propriedades tipadas apenas para `id`, `account_id`, `federal_tax_number`

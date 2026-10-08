@@ -315,6 +315,10 @@ async def main():
 asyncio.run(main())
 ```
 
+Cancelar a task não interrompe uma requisição que já está em voo (ela termina na thread). Se a
+task cancelada estava emitindo uma nota, trate como resultado incerto e reconcilie por
+`external_id`.
+
 ## Erros
 
 Todas as exceções derivam de `nfeio.NfeError`.

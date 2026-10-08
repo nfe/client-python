@@ -92,7 +92,9 @@ rejeitar a emissão por `externalId` já existente, o SDK SHALL levantar `Duplic
 ### Requirement: Busca por externalId com espera de indexação
 `service_invoices.find_by_external_id(company_id, external_id, wait=0)` SHALL devolver a nota quando a
 API retornar lista com itens e `None` quando retornar lista vazia, e, com `wait > 0`, SHALL repetir a
-busca com backoff até encontrar ou esgotar o prazo.
+busca com backoff até encontrar ou esgotar o prazo. Qualquer outra resposta (corpo vazio, forma
+desconhecida, redirect) MUST levantar `UnexpectedResponseError` e MUST NOT ser interpretada como
+"nota inexistente".
 
 #### Scenario: Nota encontrada
 - **WHEN** a API responde `{"serviceInvoices":[{…}], "page":1}`
@@ -101,6 +103,10 @@ busca com backoff até encontrar ou esgotar o prazo.
 #### Scenario: Nota inexistente
 - **WHEN** a API responde 200 com `{"serviceInvoices":[], "page":1}`
 - **THEN** o método devolve `None` sem levantar erro
+
+#### Scenario: Resposta inesperada na busca
+- **WHEN** a busca responde 200 com corpo vazio
+- **THEN** o SDK levanta `UnexpectedResponseError` em vez de devolver `None`
 
 #### Scenario: Indexação atrasada
 - **WHEN** `wait=30` e a primeira busca volta vazia e a terceira traz a nota

@@ -15,6 +15,10 @@ O SDK MUST NOT oferecer a remoção de todos os webhooks numa chamada.
 - **WHEN** o usuário chama `create({"uri": "https://erp.exemplo/hook", "secret": "…", "filters": ["service_invoice.issued_successfully"]})`
 - **THEN** o corpo enviado é `{"webHook": {…}}` e o retorno é o webhook desembrulhado
 
+#### Scenario: URI recusada na verificação
+- **WHEN** a API não consegue validar a URI na criação e responde 400 com `code` 40001
+- **THEN** o SDK levanta `InvalidRequestError` com `error_code == 40001` e a mensagem da API
+
 #### Scenario: Valores textuais do fio
 - **WHEN** a listagem traz `"contentType": "json"` e `"status": "Active"`
 - **THEN** `hook.content_type == "json"` e `hook.status == "Active"`

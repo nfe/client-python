@@ -508,7 +508,7 @@ docs/contrato/           # evidência e decisões
 | 8 | `Idempotency-Key` | — | ignorado | não altera retry | VAULT `Ask API` |
 | 9 | `externalId` duplicado | não documentado | 400 texto livre, sem código | `DuplicateExternalIdError` | VAULT `Retry seguro` |
 | 10 | `/external/{id}` | objeto; parâmetro `externalId` ≠ `{id}`; operationId duplicado | **lista**; miss = 200 vazio | desembrulha; `None` | SONDA §6, VAULT `P1/02` |
-| 11 | Cancelar | `DELETE` → 200 string | 202 + `Location` | trata como assíncrono | VAULT memória/NR-01 (inferência) |
+| 11 | Cancelar | `DELETE` → 200 string | 202 + `Location` (**provado na fase 2**) | trata como assíncrono | `probe-fase2.md` |
 | 12 | `/status` | ausente | **não existe** (400 binding) | polling via `GET /{id}` | SONDA §6 |
 | 13 | PDF/XML | 200 JSON string | **302** p/ blob pré-assinado em outro host | segue sem credencial; `bytes` | SONDA §6 |
 | 14 | XML NFS-e | — | começa em `<Nfse`, sem `<?xml` | entregue cru; doc avisa | SONDA §6 |
@@ -533,6 +533,10 @@ docs/contrato/           # evidência e decisões
 | 33 | CPF | 404 "não encontrado ou data divergente" | `{errors:[{code:40401}]}`; data `AAAA-MM-DD` | valida data local | SONDA §9 |
 | 34 | Cursor v2 "venenoso" | — | 500 em jul/2026; **200 hoje** | sem workaround; teste live de varredura | SONDA §4, VAULT `Migração companies` |
 | 35 | Rota não servida | — | 404 vazio mesmo sem chave (servida → 401) | mensagem de 404 vazio sugere rota inválida | SONDA §10 |
+| 36 | Corpo do 202 de emissão | inline/ausente | nota **completa** (38 chaves) | preserva tudo no `ServiceInvoice` parcial | `probe-fase2.md` |
+| 37 | Criar empresa v2 | 200/201 | **200** com `{"company": …}` | aceita 200/201 | `probe-fase2.md` |
+| 38 | Excluir empresa v2 | 204 | 204, mas **soft delete** (`status: Inactive`, ainda consultável) | documentado em `delete` | `probe-fase2.md` |
+| 39 | Criar webhook | — | API chama a URI na criação; falha → 400 `40001`; `status` ignorado na criação; segredo ecoado | erro tipado; `repr` mascara o segredo | `probe-fase2.md` |
 
 ## Risks / Trade-offs
 
@@ -540,10 +544,11 @@ docs/contrato/           # evidência e decisões
   v1 e são mandadas para a v3 (SPEC `nf-servico-v1` 400 de retrieve; VAULT `PHP/review-07-14-2026/11`). O
   v0.1 nasce sem servir esse público. → Modelos já tratam documento como `str`; [D7] define onde a v3
   entra sem quebrar `service_invoices`; incluir NFS-e v3 cedo na v0.2.
-- **[Inferências de escrita]** 202 do cancelamento, upload v2, 503 em POST, `Retry-After`, CRUD v2 de
-  empresas não foram observados hoje (sonda só leitura). → Fase 2 começa com sonda de escrita **na
-  `NFE_COMPANY_ID`** (emitir 1 NFS-e de homologação, consultar por `externalId`, cancelar, reenviar
-  certificado) antes de fixar os testes de contrato.
+- **[Inferências de escrita]** ~~202 do cancelamento, CRUD v2 de empresas~~ **provados na fase 2**
+  (`docs/contrato/probe-fase2.md`: cancelamento 202 + `Location`; empresas v2 criar 200, alterar
+  200, excluir 204 = soft delete). Seguem como inferência: sucesso do upload v2 (exige PFX real; o
+  binding do campo `file` foi confirmado com arquivo falso → 500), 503 em POST, `Retry-After`,
+  `sendemail`, formato de entrega de evento de nota.
 - **[Certificado da empresa de teste vence em 2026-11-03]** (SONDA §5). → Avisar o André; testes live
   de emissão pulam com mensagem clara se `validUntil` < hoje.
 - **[Visão tipada é inédita na família]** Usuários de Ruby/PHP esperam DTO. → `to_dict()` e

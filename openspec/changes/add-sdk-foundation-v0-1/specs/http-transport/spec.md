@@ -98,6 +98,10 @@ redirect. Redirect para `http` SHALL levantar erro.
 - **WHEN** `GET …/pdf` responde 302 para uma URL pré-assinada em outro host
 - **THEN** o SDK busca a URL sem `Authorization` e devolve os bytes do PDF
 
+#### Scenario: Redirect fora de download
+- **WHEN** uma operação que não é download recebe 3xx
+- **THEN** o SDK levanta `UnexpectedResponseError` sem seguir o redirect
+
 #### Scenario: Redirect para http
 - **WHEN** o destino do redirect usa `http://`
 - **THEN** o SDK levanta `UnexpectedResponseError` sem fazer a requisição

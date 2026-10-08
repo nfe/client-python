@@ -49,12 +49,18 @@ Toda página SHALL oferecer `auto_paging_iter()`, que percorre os itens de todas
 demanda, e `next_page()`, que devolve a próxima página ou `None`. Na paginação por cursor, as páginas
 seguintes SHALL usar o tamanho máximo (`limit=50`); na paginação por índice, SHALL manter o `page_count`
 da página inicial, porque trocar o tamanho desloca o índice e pularia itens. A iteração MUST parar ao
-receber página vazia, mesmo que a API indique `hasMore: true`. O SDK MUST NOT
+receber página vazia, mesmo que a API indique `hasMore: true`, e MUST levantar
+`UnexpectedResponseError` quando a próxima página repetir o cursor ou a primeira nota da anterior
+(paginação que não avança). O SDK MUST NOT
 oferecer método que carregue todas as páginas em memória de uma vez.
 
 #### Scenario: Varredura completa
 - **WHEN** existem 120 notas e o usuário itera `list(...).auto_paging_iter()`
 - **THEN** recebe as 120 notas em ordem, buscando páginas sob demanda
+
+#### Scenario: Paginação que não avança
+- **WHEN** a API devolve de novo o mesmo cursor da página anterior
+- **THEN** a iteração levanta `UnexpectedResponseError` em vez de repetir indefinidamente
 
 #### Scenario: hasMore inconsistente
 - **WHEN** a API devolve `{"hasMore": true, "companies": []}`

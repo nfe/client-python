@@ -14,6 +14,10 @@ corpo da resposta (por exemplo `id`, `environment`, `flowStatus`), usando o id e
 - **WHEN** a emissão responde 202 com `{"id":"I","flowStatus":"WaitingCalculateTaxes"}`
 - **THEN** o objeto devolvido tem `id == "I"` e `flow_status == "WaitingCalculateTaxes"`
 
+#### Scenario: Corpo de nota completa no 202
+- **WHEN** a emissão responde 202 com a nota completa (como observado em 2026-10-08)
+- **THEN** o objeto devolvido preserva todos os campos e `flow_status` reflete o estado inicial
+
 #### Scenario: Corpo vazio com Location
 - **WHEN** a emissão responde 202 sem corpo e com `Location: http://api.nfe.io/v1/companies/C/serviceinvoices/I`
 - **THEN** o objeto devolvido tem `id == "I"`
