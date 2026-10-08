@@ -15,3 +15,5 @@ build/
 htmlcov/
 coverage.xml
 scripts/probes/out/
+coverage.json
+tests/live/out/
