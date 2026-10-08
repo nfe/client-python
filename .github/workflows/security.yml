@@ -1,0 +1,58 @@
+name: Segurança
+
+on:
+  pull_request:
+  push:
+    branches: [master]
+  schedule:
+    - cron: "17 6 * * 1"
+
+permissions: {}
+
+env:
+  UV_VERSION: "0.10.8"
+  UV_LOCKED: "1"
+
+jobs:
+  bandit:
+    name: bandit
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - run: pipx install "uv==${UV_VERSION}"
+      - run: uv sync --python 3.12
+      - run: uv run bandit -c pyproject.toml -r src
+
+  pip-audit:
+    name: pip-audit (dependências de desenvolvimento travadas)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - run: pipx install "uv==${UV_VERSION}"
+      - run: uv sync --python 3.12
+      - name: Auditar o lock
+        run: |
+          uv export --format requirements-txt --all-groups --no-emit-project -o requirements-audit.txt
+          uv run pip-audit --strict --disable-pip -r requirements-audit.txt
+
+  action-pins:
+    name: Pins de actions conferem com as tags
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Verificar SHA x tag de cada action
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 scripts/verify_action_pins.py

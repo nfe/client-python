@@ -60,15 +60,15 @@ packages = ["src/nfeio"]
 
 [tool.hatch.build.targets.sdist]
 include = [
-    "src/nfeio",
-    "tests",
-    "README.md",
-    "CHANGELOG.md",
-    "LICENSE",
-    "SECURITY.md",
-    "CONTRIBUTING.md",
+    "/src/nfeio",
+    "/tests",
+    "/README.md",
+    "/CHANGELOG.md",
+    "/LICENSE",
+    "/SECURITY.md",
+    "/CONTRIBUTING.md",
 ]
-exclude = ["tests/live/out"]
+exclude = ["/tests/live/out"]
 
 [tool.ruff]
 line-length = 100

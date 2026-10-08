@@ -17,3 +17,5 @@ coverage.xml
 scripts/probes/out/
 coverage.json
 tests/live/out/
+.smoke-venv/
+requirements-audit.txt

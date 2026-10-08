@@ -373,7 +373,8 @@ def create_and_wait_op(
     invoice = yield from create_op(cfg, company_id, params, external_id, options)
     if invoice.flow_status in _CREATE_SUCCESS:
         return invoice
-    assert invoice.id is not None  # noqa: S101 - _accepted guarantees an id
+    if invoice.id is None:  # pragma: no cover - _accepted always sets an id
+        raise UnexpectedResponseError("issued invoice has no id")
     result = yield from wait_op(
         cfg,
         company_id,

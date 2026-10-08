@@ -1,0 +1,19 @@
+version: 2
+updates:
+  # Actions fixadas por SHA: o Dependabot atualiza SHA e o comentário de versão juntos.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      actions:
+        patterns: ["*"]
+
+  # Só dependências de desenvolvimento existem (o pacote não tem dependências de runtime).
+  - package-ecosystem: uv
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      dev:
+        patterns: ["*"]
