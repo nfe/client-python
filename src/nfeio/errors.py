@@ -145,7 +145,7 @@ class APIError(NfeError):
             return None
         try:
             return json.loads(self.body.decode("utf-8-sig"))
-        except (UnicodeDecodeError, ValueError):
+        except (UnicodeDecodeError, ValueError, RecursionError):
             return None
 
     def __str__(self) -> str:

@@ -237,16 +237,24 @@ def find_by_external_id_op(
     delay = 1.0
     while True:
         response = yield from request(cfg, "GET", FAMILY, path, options=options)
-        data = decode_json(response, allow_empty=True)
+        data = decode_json(response)
         info = response_info(response)
-        if isinstance(data, dict):
-            items = data.get("serviceInvoices")
-            if isinstance(items, list):
-                first = next((item for item in items if isinstance(item, dict)), None)
-                if first is not None:
-                    return ServiceInvoice._from_wire(first, info)
-            elif isinstance(data.get("id"), str):  # object form, as the spec documents
-                return ServiceInvoice._from_wire(data, info)
+        # Only an explicit empty list means "no invoice": anything else unexpected must not be
+        # read as "safe to issue again" by a reconciliation flow.
+        items = data.get("serviceInvoices") if isinstance(data, dict) else None
+        if isinstance(items, list):
+            first = next((item for item in items if isinstance(item, dict)), None)
+            if first is not None:
+                return ServiceInvoice._from_wire(first, info)
+        elif isinstance(data, dict) and isinstance(data.get("id"), str):
+            return ServiceInvoice._from_wire(data, info)  # object form, as the spec documents
+        else:
+            raise UnexpectedResponseError(
+                "unexpected answer to the externalId lookup (expected a serviceInvoices list)",
+                status_code=response.status_code,
+                body=response.body,
+                headers=response.headers,
+            )
         now: float = yield Now()
         remaining = wait - (now - start)
         if remaining <= 0:
@@ -287,7 +295,9 @@ def download_op(
 ) -> Op[bytes]:
     suffix, accept = _DOWNLOADS[kind]
     path = f"{_invoice_path(company_id, invoice_id)}/{suffix}"
-    response = yield from request(cfg, "GET", FAMILY, path, accept=accept, options=options)
+    response = yield from request(
+        cfg, "GET", FAMILY, path, accept=accept, options=options, allow_redirect=True
+    )
     response = yield from follow_download(
         cfg,
         response,

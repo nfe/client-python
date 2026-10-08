@@ -17,6 +17,7 @@ from dataclasses import dataclass
 from typing import Any, Generic, TypeVar
 
 from ._core.ops import Op
+from .errors import UnexpectedResponseError
 from .models import NfeObject, ResponseInfo
 
 __all__ = ["AsyncCursorPage", "AsyncOffsetPage", "CursorPage", "OffsetPage"]
@@ -40,6 +41,10 @@ class OffsetState(Generic[T]):
     def has_more(self) -> bool:
         return len(self.items) > 0 and len(self.items) >= self.page_count
 
+    @property
+    def first_id(self) -> object:
+        return self.items[0].get("id") if self.items else None
+
 
 @dataclass(frozen=True)
 class CursorState(Generic[T]):
@@ -49,15 +54,30 @@ class CursorState(Generic[T]):
     limit: int
     backwards: bool
     fetch: Callable[[str | None, str | None, int], Op[CursorState[T]]]
+    #: Cursor (``startingAfter``/``endingBefore``) used to fetch this page.
+    cursor: str | None = None
 
     def next_op(self, limit: int) -> Op[CursorState[T]] | None:
         if not self.has_more or not self.items:
             return None
+        edge = self.items[0] if self.backwards else self.items[-1]
+        next_cursor = edge.get("id")
+        if not isinstance(next_cursor, str):
+            return None
+        if next_cursor == self.cursor:
+            raise UnexpectedResponseError(
+                "cursor pagination did not advance (the API returned the same cursor again)"
+            )
         if self.backwards:
-            first = self.items[0].get("id")
-            return self.fetch(None, first, limit) if isinstance(first, str) else None
-        last = self.items[-1].get("id")
-        return self.fetch(last, None, limit) if isinstance(last, str) else None
+            return self.fetch(None, next_cursor, limit)
+        return self.fetch(next_cursor, None, limit)
+
+
+def _check_advanced(previous: object, page_first: object) -> None:
+    if previous is not None and previous == page_first:
+        raise UnexpectedResponseError(
+            "offset pagination did not advance (the API returned the same page again)"
+        )
 
 
 SyncRunner = Callable[[Op[Any]], Any]
@@ -124,7 +144,10 @@ class OffsetPage(_PageBase[T]):
         page: OffsetPage[T] | None = self
         while page is not None and len(page) > 0:
             yield from page._state.items
+            previous = page._state.first_id
             page = page.next_page()
+            if page is not None and len(page) > 0:
+                _check_advanced(previous, page._state.first_id)
 
 
 class AsyncOffsetPage(_PageBase[T]):
@@ -156,7 +179,10 @@ class AsyncOffsetPage(_PageBase[T]):
         while page is not None and len(page) > 0:
             for item in page._state.items:
                 yield item
+            previous = page._state.first_id
             page = await page.next_page()
+            if page is not None and len(page) > 0:
+                _check_advanced(previous, page._state.first_id)
 
 
 class CursorPage(_PageBase[T]):

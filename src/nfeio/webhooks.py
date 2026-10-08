@@ -175,7 +175,7 @@ def construct_event(
         raise SignatureVerificationError("webhook signature verification failed")
     try:
         decoded = json.loads(body.decode("utf-8-sig"))
-    except (UnicodeDecodeError, ValueError):
+    except (UnicodeDecodeError, ValueError, RecursionError):
         raise InvalidParameterError("webhook body is not valid JSON", param="payload") from None
     if not isinstance(decoded, dict):
         raise InvalidParameterError("webhook body is not a JSON object", param="payload")

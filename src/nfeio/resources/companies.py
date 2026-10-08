@@ -68,6 +68,7 @@ def list_op(
         limit,
         ending_before is not None,
         fetch,
+        ending_before if ending_before is not None else starting_after,
     )
 
 

@@ -65,11 +65,13 @@ def request(
     options: RequestOptions | None = None,
     external_id: str | None = None,
     secrets: Iterable[str] = (),
+    allow_redirect: bool = False,
 ) -> Op[HttpResponse]:
-    """Send an authenticated request and return the response if its status is < 400.
+    """Send an authenticated request and return the response if its status is < 300.
 
-    3xx responses are returned untouched (only downloads follow them, without credentials).
-    Raises the mapped :class:`~nfeio.errors.APIError` for >= 400.
+    Raises the mapped :class:`~nfeio.errors.APIError` for >= 400. A 3xx is returned only when
+    ``allow_redirect`` is set (downloads, which follow it without credentials); anywhere else
+    it raises :class:`UnexpectedResponseError` instead of being mistaken for an empty answer.
     """
     key = cfg.key_for(family, options)  # ConfigurationError before any I/O
     method = method.upper()
@@ -116,6 +118,12 @@ def request(
             method=method,
             external_id=external_id,
             secrets=(key, *secrets),
+        )
+    if response.status_code >= 300 and not allow_redirect:
+        raise UnexpectedResponseError(
+            f"unexpected redirect status {response.status_code}",
+            status_code=response.status_code,
+            headers=response.headers,
         )
     return response
 
@@ -186,7 +194,7 @@ def decode_json(response: HttpResponse, *, allow_empty: bool = False) -> Any:
         )
     try:
         return jsonutil.loads(response.body)
-    except (UnicodeDecodeError, ValueError):
+    except (UnicodeDecodeError, ValueError, RecursionError):
         raise UnexpectedResponseError(
             "response body is not valid JSON",
             status_code=response.status_code,

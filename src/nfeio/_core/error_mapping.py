@@ -80,7 +80,7 @@ def extract_error(body: bytes, status: int) -> tuple[str, int | str | None, str 
         return "", None, None
     try:
         data: Any = json.loads(text)
-    except ValueError:
+    except (ValueError, RecursionError):
         return sanitize(text), None, None
     message = ""
     code: int | str | None = None
