@@ -1,0 +1,17 @@
+{
+  "probe": "CRUD de empresa na API v2 (empresa descartável SDK-PY TESTE DESCARTAVEL)",
+  "capturedOn": "2026-10-08",
+  "source": "tests/live/test_live_write.py::test_disposable_company_crud",
+  "exchanges": {
+    "create": {
+      "request": {"method": "POST", "path": "/v2/companies", "body": {"company": {"name": "SDK-PY TESTE DESCARTAVEL", "tradeName": "SDK-PY TESTE DESCARTAVEL", "federalTaxNumber": 99000000000191, "taxRegime": "SimplesNacional", "address": {"country": "BRA", "postalCode": "80010000", "street": "Rua Teste", "number": "1", "district": "Centro", "state": "PR", "city": {"code": "4106902", "name": "Curitiba"}}}}},
+      "response": {"status": 200, "note": "200, não 201; corpo embrulhado em company; federalTaxNumber volta inteiro.", "body": {"company": {"id": "{companyId}", "accountId": "{accountId}", "name": "SDK-PY TESTE DESCARTAVEL", "tradeName": "SDK-PY TESTE DESCARTAVEL", "federalTaxNumber": 99000000000191, "taxRegime": "SimplesNacional", "status": "Active", "municipalTaxes": [], "stateTaxes": [], "address": {"state": "PR", "city": {"code": "4106902", "name": "Curitiba"}}, "createdOn": "2026-10-08T21:01:42.000+00:00", "modifiedOn": "2026-10-08T21:01:42.000+00:00"}}}
+    },
+    "update": {"request": {"method": "PUT", "path": "/v2/companies/{companyId}"}, "response": {"status": 200, "body": {"company": {"id": "{companyId}", "tradeName": "SDK-PY TESTE DESCARTAVEL ATUALIZADA", "status": "Active"}}}},
+    "delete": {"request": {"method": "DELETE", "path": "/v2/companies/{companyId}"}, "response": {"status": 204, "rawBody": ""}},
+    "retrieveAfterDelete": {
+      "note": "Soft delete: a empresa continua listada e consultável, com status Inactive. Um segundo DELETE também devolve 204.",
+      "response": {"status": 200, "body": {"company": {"id": "{companyId}", "status": "Inactive"}}}
+    }
+  }
+}

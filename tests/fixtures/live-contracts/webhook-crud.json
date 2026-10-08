@@ -1,0 +1,18 @@
+{
+  "probe": "CRUD de webhook da conta em api.nfse.io/v2/webhooks",
+  "capturedOn": "2026-10-08",
+  "source": "tests/live/test_live_write.py::test_webhook_crud",
+  "exchanges": {
+    "createWithUnreachableUri": {
+      "note": "A API chama a URI na criação; example.com respondeu 405 e a criação falhou. Nada foi criado.",
+      "request": {"method": "POST", "path": "/v2/webhooks", "body": {"webHook": {"uri": "https://example.com/nfeio-sdkpy-test", "secret": "{secret}", "contentType": "json", "insecureSsl": false, "status": "Inactive", "filters": ["service_invoice.issued_successfully"]}}},
+      "response": {"status": 400, "headers": {"content-type": "application/json; charset=utf-8"}, "rawBody": "{\"errors\":[{\"code\":40001,\"message\":\"WebHook verification failed. Please ensure that the WebHook URI is valid and that the endpoint is accessible. Error encountered: 405\"}]}"}
+    },
+    "create": {
+      "note": "201; status Inactive enviado na criação é ignorado (volta Active); o segredo é ecoado no corpo.",
+      "response": {"status": 201, "body": {"webHook": {"id": "{webhookId}", "uri": "https://httpbin.org/status/200?nfeio-sdkpy-test=1", "secret": "{secret}", "contentType": "json", "insecureSsl": false, "status": "Active", "filters": ["service_invoice.issued_successfully"], "createdOn": "2026-10-08T21:00:00+00:00", "modifiedOn": "2026-10-08T21:00:00+00:00"}}}
+    },
+    "update": {"note": "PUT é substituição total; aqui status Inactive foi aplicado.", "response": {"status": 200, "body": {"webHook": {"id": "{webhookId}", "status": "Inactive"}}}},
+    "delete": {"response": {"status": 204}}
+  }
+}

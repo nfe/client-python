@@ -111,7 +111,7 @@ disallow_untyped_decorators = false
 [tool.pytest.ini_options]
 minversion = "8.0"
 testpaths = ["tests"]
-addopts = "-ra --strict-markers -m 'not live'"
+addopts = "-ra --strict-markers"
 markers = [
     "live: chamadas reais à API da NFE.io (opt-in, NFE_RUN_INTEGRATION=1)",
     "live_write: escrita real na API (exige também NFE_LIVE_WRITE=1)",

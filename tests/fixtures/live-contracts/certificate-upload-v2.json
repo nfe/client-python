@@ -1,0 +1,8 @@
+{
+  "probe": "Upload de certificado na v2 com arquivo inválido (empresa descartável; nenhum certificado real enviado)",
+  "capturedOn": "2026-10-08",
+  "source": "tests/live/test_live_write.py::test_disposable_company_crud",
+  "note": "Campo multipart 'file' + 'password'. A v2 aceitou o binding (não houve 400 'File field is required') e falhou ao processar o arquivo falso: 500 ProblemDetails, igual à v1 em 2026-09-01. O caminho de sucesso exige PFX válido e não foi exercitado (fica como teste pulado).",
+  "request": {"method": "POST", "pathShape": "/v2/companies/{companyId}/certificates", "multipartFields": ["password", "file"], "fileContentType": "application/x-pkcs12"},
+  "response": {"status": 500, "headers": {"content-type": "application/json; charset=utf-8"}, "rawBody": "{\"type\":\"https://tools.ietf.org/html/rfc9110#section-15.6.1\",\"title\":\"An error occurred while processing your request.\",\"status\":500,\"traceId\":\"00-55555555555555555555555555555555-6666666666666666-00\"}"}
+}

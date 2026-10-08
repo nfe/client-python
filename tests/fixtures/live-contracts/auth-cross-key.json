@@ -1,0 +1,9 @@
+{
+  "probe": "Chave trocada entre famílias (Authorization: <chave> sem prefixo)",
+  "capturedOn": "2026-10-08",
+  "source": "tests/live/test_live_read.py",
+  "exchanges": {
+    "dataKeyOnServiceInvoices": {"request": {"method": "GET", "pathShape": "/v1/companies/{companyId}/serviceinvoices"}, "response": {"status": 403, "rawBody": ""}},
+    "mainKeyOnAddress": {"request": {"method": "GET", "host": "address.api.nfe.io", "pathShape": "/v2/addresses/{cep}"}, "response": {"status": 403, "rawBody": ""}}
+  }
+}

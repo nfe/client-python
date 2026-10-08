@@ -139,6 +139,8 @@ class CompaniesService(SyncService):
         return self._run(update_op(self._cfg, company_id, params, options))
 
     def delete(self, company_id: str, *, options: RequestOptions | None = None) -> None:
+        """Delete a company. The API does a **soft delete**: it answers 204 and the company
+        stays retrievable (and listed) with ``status == "Inactive"``."""
         self._run(delete_op(self._cfg, company_id, options))
 
 
