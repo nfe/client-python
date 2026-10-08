@@ -13,6 +13,7 @@ from ..models._base import ResponseInfo
 from . import jsonutil
 from .error_mapping import error_from_response
 from .ops import Op
+from .redact import log_path
 from .retry import send_with_retry
 from .transport import HttpRequest, HttpResponse
 
@@ -104,7 +105,7 @@ def request(
         "nfeio request: %s %s%s -> %d (request_id=%s)",
         method,
         urlsplit(url).hostname,
-        path,
+        log_path(path),
         response.status_code,
         response.headers.get("x-request-id"),
     )

@@ -8,7 +8,7 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 
 _UNSAFE_FILENAME_RE = re.compile(r'[^\x20-\x7e]|["\\]')
-_FIELD_NAME_RE = re.compile(r"^[A-Za-z0-9_.\-]{1,64}$")
+_FIELD_NAME_RE = re.compile(r"[A-Za-z0-9_.\-]{1,64}")
 
 
 @dataclass(frozen=True)
@@ -28,7 +28,7 @@ def sanitize_filename(filename: str) -> str:
 def encode(fields: Sequence[tuple[str, str]], files: Sequence[FilePart]) -> tuple[bytes, str]:
     """Return ``(body, content_type)``. The boundary is 128 random bits."""
     for name in [n for n, _ in fields] + [f.name for f in files]:
-        if not _FIELD_NAME_RE.match(name):
+        if not _FIELD_NAME_RE.fullmatch(name):
             raise ValueError(f"invalid multipart field name {name!r}")
     while True:
         boundary = "nfeio-" + secrets.token_hex(16)

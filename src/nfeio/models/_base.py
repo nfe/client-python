@@ -263,7 +263,7 @@ def parse_datetime(text: str) -> datetime | None:
 
     Values without an offset are interpreted as UTC. Returns ``None`` when unparseable.
     """
-    match = _DATETIME_RE.match(text.strip())
+    match = _DATETIME_RE.fullmatch(text.strip())
     if not match:
         return None
     g = match.groupdict()
@@ -307,7 +307,7 @@ def to_date(raw: Any, _data: Mapping[str, Any] | None = None) -> date | None:
 
 
 _DOC_CLEAN_RE = re.compile(r"[.\-/\s]")
-_DOC_RE = re.compile(r"^[0-9A-Z]+$")
+_DOC_RE = re.compile(r"[0-9A-Z]+")
 
 
 def normalize_document(raw: Any, kind: str, type_hint: Any = None) -> str | None:
@@ -327,7 +327,7 @@ def normalize_document(raw: Any, kind: str, type_hint: Any = None) -> str | None
         text = _DOC_CLEAN_RE.sub("", raw).upper()
     else:
         return None
-    if not text or not _DOC_RE.match(text):
+    if not text or not _DOC_RE.fullmatch(text):
         return None
     if kind == "auto":
         hint = type_hint.lower() if isinstance(type_hint, str) else ""

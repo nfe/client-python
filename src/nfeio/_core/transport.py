@@ -31,6 +31,7 @@ from ..errors import (
     ResponseTooLargeError,
 )
 from .headers import SENSITIVE_HEADERS, Headers
+from .redact import log_path
 
 __all__ = [
     "AsyncTransport",
@@ -71,8 +72,9 @@ class HttpRequest:
             for k, v in self.headers.items()
         }
         return (
-            f"HttpRequest(method={self.method!r}, host={parts.netloc!r}, path={parts.path!r}, "
-            f"headers={shown!r}, body_bytes={len(self.body or b'')})"
+            f"HttpRequest(method={self.method!r}, host={parts.netloc!r}, "
+            f"path={log_path(parts.path)!r}, headers={shown!r}, "
+            f"body_bytes={len(self.body or b'')})"
         )
 
 

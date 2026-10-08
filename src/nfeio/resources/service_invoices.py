@@ -119,7 +119,7 @@ def _accepted(
 
 
 _LOCATION_RE = re.compile(
-    r"^/v1/companies/(?P<company>[A-Za-z0-9_-]{1,64})/serviceinvoices/(?P<id>[A-Za-z0-9_-]{1,64})/?$"
+    r"/v1/companies/(?P<company>[A-Za-z0-9_-]{1,64})/serviceinvoices/(?P<id>[A-Za-z0-9_-]{1,64})/?"
 )
 
 
@@ -129,7 +129,7 @@ def _id_from_location(response: HttpResponse, company_id: str) -> str | None:
     location = response.headers.get("location")
     if not location:
         return None
-    match = _LOCATION_RE.match(urlsplit(location.strip()).path)
+    match = _LOCATION_RE.fullmatch(urlsplit(location.strip()).path)
     if match is None or match.group("company") != company_id:
         return None
     return match.group("id")

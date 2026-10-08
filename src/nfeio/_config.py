@@ -67,8 +67,8 @@ DEFAULT_BASE_URLS: Final[Mapping[ApiFamily, str]] = MappingProxyType(
 
 DEFAULT_MAX_RESPONSE_BYTES: Final = 10 * 1024 * 1024
 _PROTECTED_HEADERS: Final = frozenset({"authorization", "user-agent", "content-type"})
-_TOKEN_RE: Final = re.compile(r"^[A-Za-z0-9._+\-]{1,64}$")
-_HEADER_NAME_RE: Final = re.compile(r"^[!#$%&'*+\-.^_`|~0-9A-Za-z]{1,64}$")
+_TOKEN_RE: Final = re.compile(r"[A-Za-z0-9._+\-]{1,64}")
+_HEADER_NAME_RE: Final = re.compile(r"[!#$%&'*+\-.^_`|~0-9A-Za-z]{1,64}")
 
 
 def mask_secret(value: str) -> str:
@@ -198,7 +198,7 @@ class RequestOptions:
         if self.extra_headers is not None:
             frozen: dict[str, str] = {}
             for name, value in self.extra_headers.items():
-                if not isinstance(name, str) or not _HEADER_NAME_RE.match(name):
+                if not isinstance(name, str) or not _HEADER_NAME_RE.fullmatch(name):
                     raise ConfigurationError(f"invalid header name {name!r}")
                 if name.lower() in _PROTECTED_HEADERS:
                     raise ConfigurationError(
@@ -247,7 +247,7 @@ def _check_app_info(app_info: object) -> tuple[str, str] | None:
     if (
         not isinstance(app_info, tuple)
         or len(app_info) != 2
-        or not all(isinstance(part, str) and _TOKEN_RE.match(part) for part in app_info)
+        or not all(isinstance(part, str) and _TOKEN_RE.fullmatch(part) for part in app_info)
     ):
         raise ConfigurationError(
             "app_info must be a (name, version) tuple of 1-64 characters from [A-Za-z0-9._+-]"

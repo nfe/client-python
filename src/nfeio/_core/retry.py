@@ -21,6 +21,7 @@ from urllib.parse import urlsplit
 from .._config import ClientConfig
 from ..errors import APIConnectionError, FailurePhase
 from .ops import Op, Send, Sleep, UtcNow
+from .redact import log_path
 from .transport import HttpRequest, HttpResponse
 
 logger = logging.getLogger("nfeio")
@@ -94,7 +95,7 @@ def send_with_retry(
                 _log_retry(
                     method,
                     parts.hostname,
-                    parts.path,
+                    log_path(parts.path),
                     type(exc).__name__,
                     attempt,
                     max_retries,
@@ -118,7 +119,7 @@ def send_with_retry(
             _log_retry(
                 method,
                 parts.hostname,
-                parts.path,
+                log_path(parts.path),
                 str(status),
                 attempt,
                 max_retries,

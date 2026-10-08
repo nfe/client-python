@@ -14,11 +14,11 @@ from urllib.parse import quote
 
 from ..errors import InvalidParameterError
 
-_OPAQUE_ID_RE: Final = re.compile(r"^[A-Za-z0-9_-]{1,64}$")
+_OPAQUE_ID_RE: Final = re.compile(r"[A-Za-z0-9_-]{1,64}")
 _CONTROL_RE: Final = re.compile(r"[\x00-\x1f\x7f]")
 _DOC_SEPARATORS_RE: Final = re.compile(r"[.\-/\s]")
-_CNPJ_RE: Final = re.compile(r"^[0-9A-Z]{12}[0-9]{2}$")
-_ISO_DATE_RE: Final = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+_CNPJ_RE: Final = re.compile(r"[0-9A-Z]{12}[0-9]{2}")
+_ISO_DATE_RE: Final = re.compile(r"\d{4}-\d{2}-\d{2}")
 
 UFS: Final = frozenset(
     {
@@ -29,8 +29,8 @@ UFS: Final = frozenset(
 
 
 def opaque_id(value: object, param: str) -> str:
-    """An API identifier: ``^[A-Za-z0-9_-]{1,64}$`` (covers the 24- and 32-hex ids seen)."""
-    if not isinstance(value, str) or not _OPAQUE_ID_RE.match(value):
+    """An API identifier, full match of ``[A-Za-z0-9_-]{1,64}`` (24/32-hex ids seen)."""
+    if not isinstance(value, str) or not _OPAQUE_ID_RE.fullmatch(value):
         raise InvalidParameterError(
             f"{param} must be a non-empty identifier of letters, digits, '_' or '-' "
             f"(max 64), got {value!r}",
@@ -68,7 +68,7 @@ def _cnpj_check_digit(body: str) -> int:
 
 
 def is_valid_cnpj(value: str) -> bool:
-    if not _CNPJ_RE.match(value) or value == "0" * 14:
+    if not _CNPJ_RE.fullmatch(value) or value == "0" * 14:
         return False
     first = _cnpj_check_digit(value[:12])
     second = _cnpj_check_digit(value[:12] + str(first))
@@ -134,7 +134,7 @@ def iso_date(value: object, param: str) -> str:
         return value.date().isoformat()
     if isinstance(value, date):
         return value.isoformat()
-    if isinstance(value, str) and _ISO_DATE_RE.match(value):
+    if isinstance(value, str) and _ISO_DATE_RE.fullmatch(value):
         try:
             return date.fromisoformat(value).isoformat()
         except ValueError:
