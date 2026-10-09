@@ -243,6 +243,7 @@ def self_signed(tmp_path_factory: pytest.TempPathFactory) -> tuple[Path, Path]:
 
 def _server_tls(cert: Path, key: Path) -> ssl.SSLContext:
     ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+    ctx.minimum_version = ssl.TLSVersion.TLSv1_2  # mesmo piso do cliente; nada de TLS 1.0/1.1
     ctx.load_cert_chain(cert, key)
     return ctx
 
