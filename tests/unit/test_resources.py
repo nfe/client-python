@@ -131,6 +131,9 @@ def test_certificate_upload_from_bytes_and_fileobj() -> None:
         (123, "pw"),
         ("/nonexistent/x.pfx", "pw"),
     ],
+    # Short ids: pytest puts the id in PYTEST_CURRENT_TEST, and Windows rejects environment
+    # variables longer than 32,767 characters (the 1 MiB value would be the id).
+    ids=["empty-file", "file-over-1mib", "empty-password", "not-bytes-or-path", "missing-path"],
 )
 def test_certificate_local_validation(file: object, password: str) -> None:
     transport = FakeTransport()

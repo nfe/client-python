@@ -17,6 +17,7 @@ jobs:
   bandit:
     name: bandit
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     permissions:
       contents: read
     steps:
@@ -30,6 +31,7 @@ jobs:
   pip-audit:
     name: pip-audit (dependências de desenvolvimento travadas)
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     permissions:
       contents: read
     steps:
@@ -46,6 +48,7 @@ jobs:
   action-pins:
     name: Pins de actions conferem com as tags
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     permissions:
       contents: read
     steps:

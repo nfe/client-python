@@ -14,6 +14,19 @@ from tests.helpers import COMPANY_ID, FakeTransport, make_client
 @pytest.mark.parametrize(
     "value",
     ["../../v2/webhooks", "..", ".", "", "a/b", "a b", "x" * 65, "abc%2F", "a\nb", 123, None],
+    ids=[
+        "traversal",
+        "dotdot",
+        "dot",
+        "empty",
+        "slash",
+        "space",
+        "65-chars",
+        "percent-encoded",
+        "newline",
+        "int",
+        "none",
+    ],
 )
 def test_opaque_id_rejects(value: object) -> None:
     with pytest.raises(InvalidParameterError):
@@ -45,7 +58,11 @@ def test_free_text_segment(value: str, encoded: str) -> None:
     assert paths.free_text_segment(value, "external_id") == encoded
 
 
-@pytest.mark.parametrize("value", ["", ".", "..", "a\x00b", "tab\there", "x" * 256, 5])
+@pytest.mark.parametrize(
+    "value",
+    ["", ".", "..", "a\x00b", "tab\there", "x" * 256, 5],
+    ids=["empty", "dot", "dotdot", "nul", "tab", "256-chars", "int"],
+)
 def test_free_text_rejects(value: object) -> None:
     with pytest.raises(InvalidParameterError):
         paths.free_text_segment(value, "external_id")

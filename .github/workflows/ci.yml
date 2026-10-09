@@ -19,6 +19,7 @@ jobs:
   lint:
     name: Lint e tipos
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     permissions:
       contents: read
     steps:
@@ -35,6 +36,7 @@ jobs:
   test:
     name: Testes (${{ matrix.os }}, Python ${{ matrix.python }})
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
     permissions:
       contents: read
     strategy:
@@ -64,6 +66,7 @@ jobs:
   build:
     name: Build e smoke test do wheel
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     permissions:
       contents: read
     steps:
