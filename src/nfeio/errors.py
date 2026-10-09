@@ -31,7 +31,6 @@ No exception ever carries the API key or the ``Authorization`` header.
 from __future__ import annotations
 
 import enum
-import json
 from collections.abc import Mapping
 from typing import TYPE_CHECKING, Any
 
@@ -143,8 +142,11 @@ class APIError(NfeError):
         """Body decoded as JSON, or ``None`` when it is empty or not JSON."""
         if not self.body:
             return None
+        # Imported here: jsonutil imports this module.
+        from ._core import jsonutil
+
         try:
-            return json.loads(self.body.decode("utf-8-sig"))
+            return jsonutil.loads(self.body)
         except (UnicodeDecodeError, ValueError, RecursionError):
             return None
 

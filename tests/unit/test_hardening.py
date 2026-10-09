@@ -2,9 +2,16 @@
 
 from __future__ import annotations
 
+import hashlib
+import hmac
+import json
+
 import pytest
 
-from nfeio import UnexpectedResponseError
+from nfeio import InvalidParameterError, UnexpectedResponseError
+from nfeio._core import jsonutil
+from nfeio._core.error_mapping import extract_error
+from nfeio.webhooks import construct_event
 from tests.helpers import COMPANY_ID, INVOICE_ID, FakeTransport, invoice_json, make_client, resp
 
 
@@ -43,6 +50,57 @@ def test_deeply_nested_json_stays_inside_the_hierarchy() -> None:
     with pytest.raises(InvalidRequestError) as info:
         client.webhooks.list()
     assert info.value.json_body is None
+
+
+def _nested(depth: int) -> str:
+    return "[" * depth + "]" * depth
+
+
+def test_json_depth_limit_is_explicit() -> None:
+    """The limit does not depend on the interpreter: 129 levels decode fine with ``json``."""
+    limit = jsonutil.MAX_JSON_DEPTH
+    assert jsonutil.loads(_nested(limit).encode()) == json.loads(_nested(limit))
+    json.loads(_nested(limit + 1))
+    with pytest.raises(ValueError, match="nested deeper than 128"):
+        jsonutil.loads(_nested(limit + 1).encode())
+    objects = '{"a":' * limit + "1" + "}" * limit
+    assert jsonutil.loads(objects) is not None
+    with pytest.raises(ValueError, match="nested deeper"):
+        jsonutil.loads('{"a":' * limit + "[1]" + "}" * limit)
+
+
+def test_json_depth_ignores_brackets_inside_strings() -> None:
+    noise = "[{" * 500
+    assert jsonutil.loads(json.dumps({"text": noise, "list": [noise]})) == {
+        "text": noise,
+        "list": [noise],
+    }
+    # An escaped quote does not close the string, so the brackets after it still do not count.
+    escaped = '{"text": "say \\"' + noise + '\\" ok"}'
+    assert jsonutil.loads(escaped)["text"] == 'say "' + noise + '" ok'
+    # An escaped backslash does close it: the brackets after it are real nesting.
+    real = '["\\\\", ' * (jsonutil.MAX_JSON_DEPTH + 1) + "1" + "]" * (jsonutil.MAX_JSON_DEPTH + 1)
+    with pytest.raises(ValueError, match="nested deeper"):
+        jsonutil.loads(real)
+
+
+def test_json_depth_check_with_unterminated_string_is_linear() -> None:
+    """An unterminated string full of escaped quotes is scanned once, not once per quote."""
+    hostile = "[" * 200 + '"' + '\\"' * 500_000
+    with pytest.raises(ValueError, match="nested deeper"):
+        jsonutil.loads(hostile)
+    with pytest.raises(json.JSONDecodeError, match="Unterminated string"):
+        jsonutil.loads("[" * 100 + '"' + '\\"' * 500_000)
+
+
+def test_deeply_nested_error_body_and_webhook() -> None:
+    deep = _nested(jsonutil.MAX_JSON_DEPTH + 1).encode()
+    message, code, trace_id = extract_error(deep, 400)
+    assert message.startswith("[[[") and code is None and trace_id is None
+    secret = "s3cr3t"
+    signature = "sha1=" + hmac.new(secret.encode(), deep, hashlib.sha1).hexdigest()
+    with pytest.raises(InvalidParameterError, match="not valid JSON"):
+        construct_event(deep, signature, secret)
 
 
 def test_offset_pagination_that_does_not_advance() -> None:

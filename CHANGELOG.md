@@ -45,6 +45,8 @@ Primeira versão do SDK oficial da NFE.io para Python (`pip install nfe-io`, `im
   que pode ter chegado à API; `Idempotency-Key` não muda essa regra.
 - TLS sempre verificado (mínimo 1.2), sem opção para desligar; timeouts finitos; respostas
   limitadas a 10 MiB; sem compressão.
+- JSON não confiável (respostas, erros e webhooks) limitado a 128 níveis de aninhamento, com o
+  mesmo resultado em qualquer versão do Python.
 - Redirect de download seguido só em https e **sem** a chave de API.
 - Ids, `externalId` e documentos validados antes de entrar no path (sem path traversal).
 - Chaves, senha de certificado e segredo de webhook nunca aparecem em `repr`, logs ou

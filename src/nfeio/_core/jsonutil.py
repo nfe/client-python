@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import math
+import re
 import secrets
 from collections.abc import Mapping
 from datetime import date, datetime
@@ -11,6 +12,18 @@ from decimal import Decimal
 from typing import Any
 
 from ..errors import InvalidParameterError
+
+MAX_JSON_DEPTH = 128
+"""Deepest array/object nesting accepted from untrusted JSON (API responses, error bodies and
+webhooks). NFE.io payloads nest a handful of levels; the explicit limit rejects a hostile body the
+same way on every Python version and platform instead of relying on the interpreter's recursion
+limit (Python 3.14 decodes 100,000 nested levels without ``RecursionError``)."""
+
+# A JSON string, honouring escaped quotes and backslashes. The closing quote is optional so an
+# unterminated string consumes the rest of the text instead of being rescanned from every escaped
+# quote inside it (which would be quadratic); such a body is invalid JSON anyway.
+_JSON_STRING = re.compile(r'"[^"\\]*(?:\\.[^"\\]*)*"?', re.DOTALL)
+_NOT_BRACKET = re.compile(r"[^\[\]{}]+")
 
 
 def _format_decimal(value: Decimal) -> str:
@@ -57,6 +70,26 @@ def dumps(obj: Any) -> bytes:
     return text.encode("utf-8")
 
 
-def loads(body: bytes) -> Any:
-    """Decode a response body (UTF-8, optional BOM). Raises ``ValueError`` when invalid."""
-    return json.loads(body.decode("utf-8-sig"))
+def _check_depth(text: str) -> None:
+    """Raise ``ValueError`` when ``text`` nests arrays/objects deeper than :data:`MAX_JSON_DEPTH`.
+
+    Linear time and no recursion: strings are removed first (brackets inside them do not count),
+    then only ``[ ] { }`` are scanned."""
+    if text.count("[") + text.count("{") <= MAX_JSON_DEPTH:
+        return
+    depth = 0
+    for char in _NOT_BRACKET.sub("", _JSON_STRING.sub("", text)):
+        if char in "[{":
+            depth += 1
+            if depth > MAX_JSON_DEPTH:
+                raise ValueError(f"JSON nested deeper than {MAX_JSON_DEPTH} levels")
+        else:
+            depth -= 1
+
+
+def loads(body: bytes | str) -> Any:
+    """Decode untrusted JSON (bytes as UTF-8 with optional BOM). Raises ``ValueError`` when the
+    body is invalid or nested deeper than :data:`MAX_JSON_DEPTH`."""
+    text = body.decode("utf-8-sig") if isinstance(body, bytes) else body
+    _check_depth(text)
+    return json.loads(text)

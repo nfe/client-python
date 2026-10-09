@@ -25,12 +25,12 @@ from __future__ import annotations
 
 import hashlib
 import hmac
-import json
 import string
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from typing import Any
 
+from ._core import jsonutil
 from .errors import InvalidParameterError, SignatureVerificationError
 from .models import NfeObject, ServiceInvoice
 
@@ -174,7 +174,7 @@ def construct_event(
     if not verify_signature(body, signature, secret):
         raise SignatureVerificationError("webhook signature verification failed")
     try:
-        decoded = json.loads(body.decode("utf-8-sig"))
+        decoded = jsonutil.loads(body)
     except (UnicodeDecodeError, ValueError, RecursionError):
         raise InvalidParameterError("webhook body is not valid JSON", param="payload") from None
     if not isinstance(decoded, dict):

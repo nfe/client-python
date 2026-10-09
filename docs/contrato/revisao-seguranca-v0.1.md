@@ -68,6 +68,12 @@ upload de certificado, com log em `DEBUG`; nenhuma chave, senha ou segredo apare
 - **Corrigido na revisão:** JSON muito aninhado gerava `RecursionError` fora da hierarquia
   `NfeError`; agora é `UnexpectedResponseError` (ou `json_body = None` em erros). Teste:
   `test_deeply_nested_json_stays_inside_the_hierarchy`.
+- Limite explícito de aninhamento: todo JSON não confiável (respostas, corpos de erro, webhooks)
+  passa por `_core/jsonutil.loads`, que recusa mais de `MAX_JSON_DEPTH = 128` níveis com
+  `ValueError` **antes** do `json.loads`, em custo linear (remove as strings e varre só
+  `[ ] { }`). Antes a proteção dependia do limite de recursão do interpretador, e o Python 3.14
+  decodifica 100 mil níveis sem `RecursionError`. Testes: `test_json_depth_limit_is_explicit`,
+  `test_json_depth_ignores_brackets_inside_strings`, `test_deeply_nested_error_body_and_webhook`.
 - Mensagens de erro saneadas (sem caracteres de controle) e truncadas em 1.000 caracteres.
 
 ## 5. TLS

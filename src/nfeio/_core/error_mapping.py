@@ -11,7 +11,6 @@ The NFE.io API uses (at least) these error bodies, all handled here:
 
 from __future__ import annotations
 
-import json
 import re
 from collections.abc import Iterable
 from datetime import datetime, timezone
@@ -30,6 +29,7 @@ from ..errors import (
     RateLimitError,
     ServerError,
 )
+from . import jsonutil
 from .retry import is_idempotent, parse_retry_after
 from .transport import HttpResponse
 
@@ -79,7 +79,7 @@ def extract_error(body: bytes, status: int) -> tuple[str, int | str | None, str 
     except UnicodeDecodeError:
         return "", None, None
     try:
-        data: Any = json.loads(text)
+        data: Any = jsonutil.loads(text)
     except (ValueError, RecursionError):
         return sanitize(text), None, None
     message = ""
