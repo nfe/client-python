@@ -1,0 +1,60 @@
+name: Release
+
+# Publicação no PyPI só por tag vX.Y.Z, com Trusted Publishing (OIDC, sem token guardado) e
+# attestations PEP 740. Os artefatos são construídos uma única vez no job "build"; o job
+# "publish" roda no environment protegido "pypi" (aprovação manual) e só baixa e publica.
+
+on:
+  push:
+    tags: ["v*.*.*"]
+
+permissions: {}
+
+env:
+  UV_VERSION: "0.10.8"
+  UV_LOCKED: "1"
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - run: pipx install "uv==${UV_VERSION}"
+      - name: Tag igual a __version__
+        run: |
+          version="$(sed -n 's/^__version__ = "\(.*\)"$/\1/p' src/nfeio/_version.py)"
+          test "v${version}" = "${GITHUB_REF_NAME}"
+      - run: uv sync --python 3.12
+      - run: uv run pytest
+      - run: uv build
+      - run: uv run twine check --strict dist/*
+      # SHA a conferir antes do primeiro push: scripts/verify_action_pins.py (job action-pins).
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: dist
+          path: dist/
+          if-no-files-found: error
+          retention-days: 7
+
+  publish:
+    name: Publicar no PyPI
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/project/nfe-io/
+    permissions:
+      id-token: write # Trusted Publishing (OIDC) e attestations
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: dist
+          path: dist/
+      - uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33 # v1.14.2
+        with:
+          attestations: true

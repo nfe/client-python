@@ -1,0 +1,25 @@
+.env
+.env.*
+!.env.example
+nfeio-docs
+__pycache__/
+*.py[cod]
+.venv/
+dist/
+build/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+coverage.xml
+scripts/probes/out/
+coverage.json
+tests/live/out/
+.smoke-venv/
+requirements-audit.txt
+
+# arquivos locais do agente (não versionar)
+CLAUDE.md
+.claude/

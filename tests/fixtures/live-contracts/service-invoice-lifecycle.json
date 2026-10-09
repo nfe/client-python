@@ -1,0 +1,45 @@
+{
+  "probe": "Ciclo de vida de NFS-e v1 em homologação (empresa de teste)",
+  "capturedOn": "2026-10-08",
+  "source": "tests/live/test_live_write.py::test_service_invoice_lifecycle",
+  "exchanges": {
+    "create": {
+      "request": {"method": "POST", "pathShape": "/v1/companies/{companyId}/serviceinvoices", "bodyKeys": ["borrower", "cityServiceCode", "description", "externalId", "servicesAmount"]},
+      "response": {
+        "status": 202,
+        "headers": {"content-type": "application/json; charset=utf-8", "location": "http://api.nfe.io/v1/companies/{companyId}/serviceinvoices/{invoiceId}"},
+        "note": "Corpo de 202 é uma nota completa (38 chaves), não só {id, environment, flowStatus} como no RTC de 2026-09-01. Location com esquema http.",
+        "body": {"id": "{invoiceId}", "externalId": "{externalId}", "environment": "Development", "flowStatus": "WaitingCalculateTaxes", "status": "None", "servicesAmount": 10.0, "cityServiceCode": "10677", "description": "Servico de teste", "borrower": {"type": "NaturalPerson", "name": "Tomador", "federalTaxNumber": 52998224725}, "provider": {"type": "LegalEntity", "federalTaxNumber": 191}}
+      }
+    },
+    "findByExternalIdRightAfter202": {
+      "note": "Encontrada na primeira chamada (0,21 s após o 202): o atraso de indexação não apareceu hoje.",
+      "response": {"status": 200, "body": {"serviceInvoices": [{"id": "{invoiceId}", "externalId": "{externalId}", "flowStatus": "WaitingCalculateTaxes"}], "page": 1}}
+    },
+    "duplicateExternalId": {
+      "response": {"status": 400, "headers": {"content-type": "application/json; charset=utf-8"}, "rawBody": "\"service invoice with external id ({externalId}) already exists\""}
+    },
+    "waitUntilIssued": {"flowStatuses": ["WaitingCalculateTaxes", "Issued"], "pollRoute": "GET /v1/companies/{companyId}/serviceinvoices/{invoiceId}"},
+    "downloadPdf": {
+      "first": {"status": 302, "headers": {"location": "https://api.nfse.io/v1/blob/download?b={b}&e={e}&s={s}"}, "authorizationSent": true},
+      "redirect": {"status": 200, "headers": {"content-type": "application/pdf"}, "authorizationSent": false, "bodyHead": "%PDF-1.4", "bytes": 56223}
+    },
+    "downloadXml": {
+      "first": {"status": 302},
+      "redirect": {"status": 200, "headers": {"content-type": "application/xml"}, "authorizationSent": false, "bodyHead": "<Nfse><InfNfse>", "bytes": 1316}
+    },
+    "cancel": {
+      "request": {"method": "DELETE", "pathShape": "/v1/companies/{companyId}/serviceinvoices/{invoiceId}"},
+      "response": {
+        "status": 202,
+        "headers": {"content-type": "application/json; charset=utf-8", "location": "http://api.nfe.io/v1/companies/{companyId}/serviceinvoices/{invoiceId}"},
+        "note": "Confirma a inferência: cancelamento é assíncrono (a spec diz 200 string).",
+        "body": {"id": "{invoiceId}", "flowStatus": "WaitingSendCancel", "status": "Issued"}
+      },
+      "finalFlowStatus": "Cancelled"
+    },
+    "cancellationXml": {
+      "response": {"status": 404, "rawBody": "\"Cancellation event XML not available for this service invoice (National environment only; legacy providers have no cancellation event XML, or the invoice has not been cancelled).\""}
+    }
+  }
+}

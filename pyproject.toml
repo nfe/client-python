@@ -1,0 +1,139 @@
+[build-system]
+requires = ["hatchling>=1.25"]
+build-backend = "hatchling.build"
+
+[project]
+name = "nfe-io"
+dynamic = ["version"]
+description = "SDK oficial da NFE.io para Python: NFS-e, empresas, certificados, webhooks e consultas de CNPJ, CPF e CEP."
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+requires-python = ">=3.10"
+authors = [{ name = "NFE.io", email = "suporte@nfe.io" }]
+keywords = ["nfe.io", "nfse", "nota fiscal", "nfe", "fiscal", "brasil", "sdk"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Natural Language :: Portuguese (Brazilian)",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Office/Business :: Financial :: Accounting",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Typing :: Typed",
+]
+# Zero runtime dependencies (project rule). Do not add anything here.
+dependencies = []
+
+[project.urls]
+Homepage = "https://nfe.io"
+Documentation = "https://nfe.io/docs"
+Source = "https://github.com/nfe/client-python"
+Changelog = "https://github.com/nfe/client-python/blob/master/CHANGELOG.md"
+Issues = "https://github.com/nfe/client-python/issues"
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3",
+    "pytest-asyncio>=0.24",
+    "coverage[toml]>=7.6",
+    "ruff>=0.7",
+    "mypy>=1.13",
+    "bandit>=1.8",
+    "pip-audit>=2.7",
+    "pyyaml>=6.0",
+    "types-pyyaml>=6.0",
+    "twine>=6.0",
+]
+
+[tool.hatch.version]
+path = "src/nfeio/_version.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/nfeio"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/src/nfeio",
+    "/tests",
+    "/README.md",
+    "/CHANGELOG.md",
+    "/LICENSE",
+    "/SECURITY.md",
+    "/CONTRIBUTING.md",
+]
+exclude = ["/tests/live/out"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+src = ["src", "tests"]
+extend-exclude = ["scripts/probes", "*.md"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "S", "SIM", "RUF", "PT", "ASYNC"]
+ignore = [
+    "RUF001", # Portuguese strings legitimately contain non-ASCII lookalikes
+    "RUF002",
+    "RUF003",
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = [
+    "S101", # assert is the point of tests
+    "S105", # fake secrets in fixtures
+    "S106",
+    "S107",
+    "S311", # non-crypto random in tests
+    "PT018", # compound assertions are fine in tests
+]
+"scripts/**" = ["S101", "S310"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["nfeio"]
+
+[tool.mypy]
+strict = true
+python_version = "3.10"
+files = ["src", "tests"]
+warn_unreachable = true
+
+[[tool.mypy.overrides]]
+module = "tests.*"
+disallow_untyped_decorators = false
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+testpaths = ["tests"]
+addopts = "-ra --strict-markers"
+markers = [
+    "live: chamadas reais à API da NFE.io (opt-in, NFE_RUN_INTEGRATION=1)",
+    "live_write: escrita real na API (exige também NFE_LIVE_WRITE=1)",
+]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+filterwarnings = ["error"]
+
+[tool.coverage.run]
+source = ["nfeio"]
+branch = true
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = false
+fail_under = 85
+exclude_also = [
+    "if TYPE_CHECKING:",
+    "@overload",
+    "raise NotImplementedError",
+    "\\.\\.\\.$",
+]
+
+[tool.bandit]
+exclude_dirs = ["tests"]

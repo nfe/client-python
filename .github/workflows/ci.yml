@@ -1,0 +1,91 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [master]
+
+permissions: {}
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  UV_VERSION: "0.10.8"
+  UV_LOCKED: "1"
+
+jobs:
+  lint:
+    name: Lint e tipos
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Instalar uv
+        run: pipx install "uv==${UV_VERSION}"
+      - run: uv sync --python 3.12
+      - run: uv run ruff check .
+      - run: uv run ruff format --check .
+      - run: uv run mypy --strict src tests
+
+  test:
+    name: Testes (${{ matrix.os }}, Python ${{ matrix.python }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        python: ["3.10", "3.11", "3.12", "3.13", "3.14"]
+        include:
+          - os: macos-latest
+            python: "3.12"
+          - os: windows-latest
+            python: "3.12"
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Instalar uv
+        run: pipx install "uv==${{ env.UV_VERSION }}"
+      - run: uv sync --python ${{ matrix.python }}
+      - name: Testes com cobertura
+        run: uv run coverage run -m pytest
+      - name: Mínimos de cobertura (núcleo, erros e webhooks >= 90%, total >= 85%)
+        run: |
+          uv run coverage json -o coverage.json
+          uv run python scripts/check_coverage.py coverage.json
+
+  build:
+    name: Build e smoke test do wheel
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Instalar uv
+        run: pipx install "uv==${UV_VERSION}"
+      - run: uv build
+      - run: uv run --group dev twine check --strict dist/*
+      - name: Wheel sem dependências de runtime
+        run: |
+          unzip -p dist/*.whl '*/METADATA' > METADATA
+          if grep -E '^Requires-Dist:' METADATA | grep -v 'extra =='; then
+            echo "runtime dependency found"; exit 1
+          fi
+      - name: Smoke test num venv limpo
+        run: |
+          uv venv --python 3.12 /tmp/smoke
+          uv pip install --python /tmp/smoke/bin/python dist/*.whl
+          test "$(uv pip list --python /tmp/smoke/bin/python --format freeze | wc -l)" -eq 1
+          /tmp/smoke/bin/python scripts/smoke_test.py
