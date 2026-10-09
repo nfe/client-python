@@ -43,8 +43,8 @@ MUST ser fixadas por SHA de commit e os jobs MUST declarar permissões mínimas.
 
 ### Requirement: Auditoria de segurança contínua
 O CI SHALL executar `bandit` sobre o código do pacote, `pip-audit` sobre as dependências de
-desenvolvimento travadas e análise CodeQL, e SHALL manter Dependabot apenas para GitHub Actions e
-dependências de desenvolvimento.
+desenvolvimento travadas e análise CodeQL (pelo default setup do repositório), e SHALL manter
+Dependabot apenas para GitHub Actions e dependências de desenvolvimento.
 
 #### Scenario: Vulnerabilidade em dependência de dev
 - **WHEN** `pip-audit` encontra vulnerabilidade conhecida no lock

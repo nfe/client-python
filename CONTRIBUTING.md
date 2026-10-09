@@ -31,6 +31,9 @@ uv run pip-audit --strict --disable-pip -r requirements-audit.txt
 uv build && uv run twine check --strict dist/*
 ```
 
+No GitHub, o CodeQL roda pelo default setup do repositório; não há workflow próprio dele em
+`.github/workflows/`.
+
 ## Regras do projeto
 
 1. **Zero dependências de runtime.** O pacote usa só a biblioteca padrão. Dependências novas só

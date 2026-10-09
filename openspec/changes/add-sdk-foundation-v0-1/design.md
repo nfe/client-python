@@ -417,8 +417,8 @@ oposto do que a maioria dos usuários (Odoo/ERPNext síncronos) roda.
   e mínimas por job; **PyPI Trusted Publishing (OIDC)** — sem token de PyPI em secret; publicação com
   **attestations PEP 740** (Sigstore) pelo `pypa/gh-action-pypi-publish`; build único, artefato
   verificado e publicado em job separado com environment `pypi` protegido (aprovação manual);
-  `pip-audit` sobre `uv export` (dev); Dependabot só para `github-actions` e dev-deps; CodeQL (python);
-  `bandit -r src` no CI; `ruff` com regras `S` (flake8-bandit).
+  `pip-audit` sobre `uv export` (dev); Dependabot só para `github-actions` e dev-deps; CodeQL (python)
+  pelo default setup do repositório no GitHub, sem workflow próprio; `bandit -r src` no CI; `ruff` com regras `S` (flake8-bandit).
 - **`SECURITY.md`:** versões suportadas, canal privado = **GitHub Private Vulnerability Reporting**
   (decidido, Menor 3), prazo de resposta, escopo (SDK, não a API), política de divulgação coordenada.
 
@@ -446,7 +446,7 @@ oposto do que a maioria dos usuários (Odoo/ERPNext síncronos) roda.
 | Tipos | `mypy --strict` + `py.typed` | consumidores tipados (Odoo 18 já usa hints) |
 | Testes | `pytest` + `pytest-asyncio` (dev) | async direto nos testes; zero impacto em runtime |
 | Cobertura | `coverage` ≥ 90% em `nfeio._core`, `nfeio.errors`, `nfeio.webhooks`; ≥ 85% global | núcleo é onde mora o risco |
-| Segurança | `bandit`, `pip-audit`, CodeQL | §11 |
+| Segurança | `bandit`, `pip-audit`, CodeQL (default setup do repositório) | §11 |
 | CI | GitHub Actions; matriz 3.10, 3.11, 3.12, 3.13, 3.14 (ubuntu) + 3.12 em macOS e Windows | 3.14 = atual; 3.10 = piso (Odoo 17/ERPNext 15) |
 | Integração | `pytest -m live`, lê `.env` (parser stdlib no conftest), pula sem chave; escrita só com `NFE_LIVE_WRITE=1` e só em `NFE_COMPANY_ID` | regra 2 das regras do projeto |
 

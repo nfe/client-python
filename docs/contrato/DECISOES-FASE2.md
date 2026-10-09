@@ -86,11 +86,14 @@ permitia prefixar variáveis no comando). O opt-in nunca é lido do `.env`.
 
 **F17. CI sem `setup-python`/`setup-uv`.** Para reduzir actions de terceiros, o `uv` é instalado
 com `pipx install uv==0.10.8` e o Python vem do próprio `uv`. Só `checkout`, `upload/download-
-artifact`, `codeql-action` e `pypa/gh-action-pypi-publish` são usadas.
+artifact` e `pypa/gh-action-pypi-publish` são usadas. O CodeQL não tem workflow próprio: roda
+pelo default setup do repositório no GitHub. O workflow avançado (`codeql.yml`) foi removido
+porque o upload do SARIF é recusado quando o default setup está ligado ("configurations cannot be
+processed when the default setup is enabled").
 
 **F18. Pins de actions não verificados daqui.** Esta sessão não tinha acesso ao GitHub. O SHA do
 `actions/checkout` v4.2.2 foi conferido num repositório local; os de `upload-artifact`,
-`download-artifact`, `codeql-action` e `gh-action-pypi-publish` vieram de memória e **precisam
+`download-artifact` e `gh-action-pypi-publish` vieram de memória e **precisam
 ser conferidos** antes do primeiro push: `GH_TOKEN=… python3 scripts/verify_action_pins.py`
 (o job `action-pins` do workflow de segurança faz o mesmo no CI e falha se não baterem).
 
