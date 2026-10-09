@@ -34,7 +34,7 @@ jobs:
       - run: uv build
       - run: uv run twine check --strict dist/*
       # SHA a conferir antes do primeiro push: scripts/verify_action_pins.py (job action-pins).
-      - uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8c75cf882 # v4.4.3
+      - uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
         with:
           name: dist
           path: dist/
