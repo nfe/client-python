@@ -19,3 +19,7 @@ coverage.json
 tests/live/out/
 .smoke-venv/
 requirements-audit.txt
+
+# arquivos locais do agente (não versionar)
+CLAUDE.md
+.claude/
