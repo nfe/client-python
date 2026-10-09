@@ -100,3 +100,10 @@ menção em arquivos versionados). Decida se entram no `.gitignore`.
 
 **F20. Versão.** `_version.py` já diz `0.1.0`; o CHANGELOG marca a seção como "não publicada".
 Alternativa: `0.1.0.dev0` até a publicação.
+
+---
+
+## Registro (André, 2026-10-08)
+
+- **F12:** manter o nome `delete`. A docstring já documenta que a API só desativa (`status == "Inactive"`); o README deve dizer o mesmo.
+- **F13:** aprovado `https://httpbin.org/status/200?nfeio-sdkpy-test=1` como URI dos webhooks de teste ao vivo.
