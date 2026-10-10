@@ -8,7 +8,7 @@ pode trazer mudança incompatível; ela sempre será anunciada aqui.
 
 ## [Não lançado]
 
-## [0.1.0] - não publicada
+## [0.1.0] - 2026-10-09
 
 Primeira versão do SDK oficial da NFE.io para Python (`pip install nfe-io`, `import nfeio`).
 
@@ -52,3 +52,6 @@ Primeira versão do SDK oficial da NFE.io para Python (`pip install nfe-io`, `im
 - Chaves, senha de certificado e segredo de webhook nunca aparecem em `repr`, logs ou
   exceções; logs não registram documentos nem `externalId`.
 - Zero dependências de runtime.
+
+[Não lançado]: https://github.com/nfe/client-python/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/nfe/client-python/releases/tag/v0.1.0
