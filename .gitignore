@@ -14,7 +14,6 @@ build/
 .coverage
 htmlcov/
 coverage.xml
-scripts/probes/out/
 coverage.json
 tests/live/out/
 .smoke-venv/
@@ -23,3 +22,8 @@ requirements-audit.txt
 # arquivos locais do agente (não versionar)
 CLAUDE.md
 .claude/
+
+# documentação e ferramentas internas (ficam fora do repositório)
+openspec/
+docs/contrato/
+scripts/probes/
