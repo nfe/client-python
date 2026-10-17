@@ -1,5 +1,5 @@
 {
-  "_source": "Corpos de erro reais observados na sonda de leitura de 2026-10-08 (scripts/probes/out, gitignored). Ids e traceIds substituídos por valores sintéticos; texto das mensagens mantido como veio da API.",
+  "_source": "Corpos de erro reais observados na API em 2026-10-08. Ids e traceIds substituídos por valores sintéticos; texto das mensagens mantido como veio da API.",
   "cases": [
     {"label": "401 corpo vazio", "status": 401, "body": "", "expect_class": "AuthenticationError", "expect_message_contains": "api_key", "expect_code": null},
     {"label": "403 corpo vazio (chave de dados em rota fiscal)", "status": 403, "body": "", "expect_class": "PermissionDeniedError", "expect_message_contains": "api_key", "expect_code": null},

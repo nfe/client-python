@@ -39,7 +39,7 @@ No GitHub, o CodeQL roda pelo default setup do repositório; não há workflow p
 1. **Zero dependências de runtime.** O pacote usa só a biblioteca padrão. Dependências novas só
    no grupo `dev`.
 2. **Contrato vem da OpenAPI e de sonda ao vivo**, nunca de outro SDK. Quando algo não puder ser
-   observado, registre como inferência explícita (`docs/contrato/`).
+   observado, registre como inferência explícita na descrição do PR.
 3. **Nunca retentar emissão ambígua.** `POST` não é repetido após possível envio. Não mude a
    tabela de `src/nfeio/_core/retry.py` sem evidência da API.
 4. **Segurança:** nada de chave, senha ou documento em log, `repr` ou exceção; TLS sempre
